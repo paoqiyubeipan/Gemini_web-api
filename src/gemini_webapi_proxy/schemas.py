@@ -33,7 +33,7 @@ class ChatCompletionRequest(BaseModel):
     stream: bool = False
     temperature: float | None = None
     max_tokens: int | None = None
-    thinking_level: Literal[1, 2] = 1
+    thinking_level: Literal[1, 2] = 2
 
     @field_validator("thinking_level", mode="before")
     @classmethod

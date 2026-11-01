@@ -65,5 +65,5 @@ class BaseGeminiClient(ABC):
         *,
         files: list[Any] | None,
         model: Any,
-        thinking_level: Literal[1, 2] = 1,
+        thinking_level: Literal[1, 2] = 2,
     ) -> GenerationResult: ...

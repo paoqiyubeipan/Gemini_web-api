@@ -47,8 +47,8 @@ Gemini Web 的人用** —— 浏览器里登录就有免费每日额度,想把�
   `http://localhost:4982/openai` 就能用
 - **出图也能用。** 强制返回 base64 PNG/JPEG,下游客户端不用折腾
   Google CDN 跳转链
-- **两档同步思考模式。** 聊天请求可设 `thinking_level` 为 `1`（标准）
-  或 `2`（扩展）。
+- **两档同步思考模式。** `thinking_level` 默认值为 `2`（扩展）；聊天请求
+  可显式设为 `1` 使用标准思考。
 - **Docker 一行起。** 长驻容器,自动重启,macOS 主机自动同步 Safari Cookie
 
 > **免责声明**:本项目与 Google 无关。底层依赖

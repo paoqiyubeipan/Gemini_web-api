@@ -84,7 +84,7 @@ async def create_chat_completion(
     *,
     model: str,
     messages: list[ChatMessage],
-    thinking_level: int = 1,
+    thinking_level: int = 2,
 ) -> ChatCompletionResponse:
     client = await get_client(settings)
     resolved = registry.resolve_id(model)

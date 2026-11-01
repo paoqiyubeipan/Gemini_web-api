@@ -46,8 +46,8 @@ client — without copy-pasting prompts into the web UI.
   NextChat, ChatBox, or your own scripts at `http://localhost:4982/openai`.
 - **Image gen, not just chat.** Returns base64 PNG/JPEG so downstream
   clients don't have to wrestle with Google's CDN redirects.
-- **Two synchronous thinking levels.** Set `thinking_level` to `1` (standard)
-  or `2` (extended) on chat requests.
+- **Two synchronous thinking levels.** `thinking_level` defaults to `2`
+  (extended); set it to `1` for standard thinking on chat requests.
 - **Docker one-liner.** A long-running container with auto-restart and
   cookie refresh via the macOS host's Safari.
 

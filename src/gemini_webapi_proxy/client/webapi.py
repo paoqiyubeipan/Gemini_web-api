@@ -98,7 +98,7 @@ class WebAPIClient(BaseGeminiClient):
         *,
         files: list[Any] | None,
         model: Any,
-        thinking_level: Literal[1, 2] = 1,
+        thinking_level: Literal[1, 2] = 2,
     ) -> GenerationResult:
         if isinstance(thinking_level, bool) or thinking_level not in (1, 2):
             raise ValueError("thinking_level must be 1 (standard) or 2 (extended)")

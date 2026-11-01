@@ -32,6 +32,16 @@ async def test_webapi_client_maps_thinking_level(level: int, extended: bool) -> 
     assert native.kwargs["extended_thinking"] is extended
 
 
+async def test_webapi_client_defaults_to_extended_thinking() -> None:
+    client = object.__new__(WebAPIClient)
+    native = _FakeNativeClient()
+    client._client = native
+
+    await client.generate_content("hello", files=None, model="gemini-3-flash")
+
+    assert native.kwargs["extended_thinking"] is True
+
+
 @pytest.mark.parametrize("level", [0, 3, -1, True])
 def test_chat_request_rejects_unsupported_thinking_level(level: int) -> None:
     with pytest.raises(ValidationError):
@@ -42,13 +52,13 @@ def test_chat_request_rejects_unsupported_thinking_level(level: int) -> None:
         )
 
 
-def test_chat_request_defaults_to_standard_thinking() -> None:
+def test_chat_request_defaults_to_extended_thinking() -> None:
     request = ChatCompletionRequest(
         model="gemini-3-flash",
         messages=[{"role": "user", "content": "hello"}],
     )
 
-    assert request.thinking_level == 1
+    assert request.thinking_level == 2
 
 
 @pytest.mark.parametrize("level", [1, 2])
