@@ -84,6 +84,7 @@ async def create_chat_completion(
     *,
     model: str,
     messages: list[ChatMessage],
+    thinking_level: int = 1,
 ) -> ChatCompletionResponse:
     client = await get_client(settings)
     resolved = registry.resolve_id(model)
@@ -98,6 +99,7 @@ async def create_chat_completion(
                 prompt,
                 files=ref_paths or None,
                 model=runtime,
+                thinking_level=thinking_level,
             ),
             timeout=settings.chat_timeout,
         )

@@ -252,6 +252,28 @@ class ModelRegistry:
             for alias in entry.aliases:
                 if alias in self._runtime:
                     return self._runtime[alias]
+        # Gemini Web has changed its runtime model IDs over time.  The
+        # stable image aliases may still target gemini-3-* while the
+        # current account exposes gemini-flash / gemini-pro instead.
+        # Route to the best matching live tier rather than passing the
+        # proxy-only image alias to gemini-webapi as an unknown model.
+        if key in self._IMAGE_ALIAS_IDS and self._runtime:
+            tier = "pro" if "pro-image" in key else "flash"
+            candidates = [
+                name
+                for name in self._runtime
+                if tier in name.lower()
+                and (tier == "pro" or "lite" not in name.lower())
+            ]
+            if candidates:
+                candidates.sort(
+                    key=lambda name: (
+                        not name.lower().endswith(f"-{tier}"),
+                        len(name),
+                        name,
+                    )
+                )
+                return self._runtime[candidates[0]]
         return key
 
     def resolve_id(self, model_id: str) -> str:

@@ -25,7 +25,12 @@ async def chat_completions(body: ChatCompletionRequest):
         )
     settings = get_settings()
     try:
-        return await create_chat_completion(settings, model=body.model, messages=body.messages)
+        return await create_chat_completion(
+            settings,
+            model=body.model,
+            messages=body.messages,
+            thinking_level=body.thinking_level,
+        )
     except TimeoutError:
         from gemini_webapi_proxy.routes._errors import error_json
 

@@ -23,9 +23,12 @@ curl -sS -X POST http://localhost:4982/openai/v1/chat/completions \
   -d '{
     "model": "gemini-3-flash",
     "messages": [{"role": "user", "content": "Reply with exactly: pong"}],
-    "stream": false
+    "stream": false,
+    "thinking_level": 1
   }'
 ```
+
+`thinking_level` 是可选整数，默认 `1`（标准思考）；`2` 启用扩展思考。当前同步客户端只支持这两个值；值 `3` 会返回异步占位文案，真实结果不会出现在本接口的同步响应中，因此不对外开放。
 
 ## 生图示例
 

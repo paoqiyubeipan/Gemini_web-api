@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 
 @dataclass
@@ -65,4 +65,5 @@ class BaseGeminiClient(ABC):
         *,
         files: list[Any] | None,
         model: Any,
+        thinking_level: Literal[1, 2] = 1,
     ) -> GenerationResult: ...

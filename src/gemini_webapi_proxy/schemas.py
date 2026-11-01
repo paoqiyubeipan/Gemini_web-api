@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ErrorResponse(BaseModel):
@@ -33,6 +33,14 @@ class ChatCompletionRequest(BaseModel):
     stream: bool = False
     temperature: float | None = None
     max_tokens: int | None = None
+    thinking_level: Literal[1, 2] = 1
+
+    @field_validator("thinking_level", mode="before")
+    @classmethod
+    def reject_boolean_thinking_level(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError("thinking_level must be integer 1 or 2")
+        return value
 
 
 class ChatCompletionChoice(BaseModel):

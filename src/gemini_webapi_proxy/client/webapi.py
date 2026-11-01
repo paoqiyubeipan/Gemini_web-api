@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import Any, Literal
 
 from gemini_webapi import GeminiClient as _RealClient
 from gemini_webapi.utils.decorators import running
@@ -98,8 +98,16 @@ class WebAPIClient(BaseGeminiClient):
         *,
         files: list[Any] | None,
         model: Any,
+        thinking_level: Literal[1, 2] = 1,
     ) -> GenerationResult:
-        output = await self._client.generate_content(prompt, files=files or None, model=model)
+        if isinstance(thinking_level, bool) or thinking_level not in (1, 2):
+            raise ValueError("thinking_level must be 1 (standard) or 2 (extended)")
+        output = await self._client.generate_content(
+            prompt,
+            files=files or None,
+            model=model,
+            extended_thinking=thinking_level == 2,
+        )
         text = (getattr(output, "text", "") or "").strip()
         images = list(getattr(output, "images", None) or [])
         if text and not images and looks_like_upstream_refusal(text):

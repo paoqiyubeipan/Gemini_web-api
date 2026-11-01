@@ -276,6 +276,24 @@ def test_image_aliases_resolve_to_underlying() -> None:
     assert "gemini-3-flash" in entry.aliases
 
 
+def test_stable_image_aliases_fall_back_to_current_runtime_ids() -> None:
+    """Current Gemini Web sessions may expose gemini-flash / gemini-pro
+    instead of the older gemini-3-* runtime IDs used by stable aliases."""
+    r = ModelRegistry()
+    r.sync_from_client(
+        [
+            _mk("gemini-flash-lite", "Flash Lite", "fast"),
+            _mk("gemini-flash", "Flash", "image-capable flash"),
+            _mk("gemini-pro", "Pro", "advanced"),
+        ]
+    )
+
+    flash = r.resolve_runtime("gemini-2.5-flash-image")
+    pro = r.resolve_runtime("gemini-2.5-pro-image")
+    assert getattr(flash, "model_name", flash) == "gemini-flash"
+    assert getattr(pro, "model_name", pro) == "gemini-pro"
+
+
 def test_image_aliases_present_after_load_file(tmp_path) -> None:
     """load_file() also seeds the image aliases, even if the on-disk
     registry has only the raw gemini-webapi models."""

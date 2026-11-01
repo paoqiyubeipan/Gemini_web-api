@@ -18,11 +18,13 @@ Drop-in `base_url` replacement for any OpenAI client — **no API key, reuses yo
 [![FastAPI](https://img.shields.io/badge/FastAPI-009485?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 
-`pip install git+https://github.com/Lutiancheng1/gemini-webapi-proxy.git`
+`pip install git+https://github.com/paoqiyubeipan/Gemini_web-api.git`
 
 [English](README.md) · [中文](README.zh.md)
 
 </div>
+
+> **Fork-specific changes (2026-11-02):** this fork includes an image-model alias fallback and a synchronous chat `thinking_level` switch (`1` = standard, `2` = extended). See [FORK_NOTES.md](FORK_NOTES.md) for details.
 
 <p align="center">
   <img src="docs/assets/hero-lemon.png" alt="Lemon watercolor generated through the proxy" width="512">
@@ -44,6 +46,8 @@ client — without copy-pasting prompts into the web UI.
   NextChat, ChatBox, or your own scripts at `http://localhost:4982/openai`.
 - **Image gen, not just chat.** Returns base64 PNG/JPEG so downstream
   clients don't have to wrestle with Google's CDN redirects.
+- **Two synchronous thinking levels.** Set `thinking_level` to `1` (standard)
+  or `2` (extended) on chat requests.
 - **Docker one-liner.** A long-running container with auto-restart and
   cookie refresh via the macOS host's Safari.
 

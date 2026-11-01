@@ -18,11 +18,13 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-009485?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 
-`pip install git+https://github.com/Lutiancheng1/gemini-webapi-proxy.git`
+`pip install git+https://github.com/paoqiyubeipan/Gemini_web-api.git`
 
 [English](README.md) · [中文](README.zh.md)
 
 </div>
+
+> **本 fork 的修改（2026-11-02）**：增加图像模型别名回退，以及同步聊天的 `thinking_level` 开关（`1` = 标准，`2` = 扩展）。详见 [FORK_NOTES.md](FORK_NOTES.md)。
 
 <p align="center">
   <img src="docs/assets/hero-lemon.png" alt="通过代理生成的水彩柠檬" width="512">
@@ -45,6 +47,8 @@ Gemini Web 的人用** —— 浏览器里登录就有免费每日额度,想把�
   `http://localhost:4982/openai` 就能用
 - **出图也能用。** 强制返回 base64 PNG/JPEG,下游客户端不用折腾
   Google CDN 跳转链
+- **两档同步思考模式。** 聊天请求可设 `thinking_level` 为 `1`（标准）
+  或 `2`（扩展）。
 - **Docker 一行起。** 长驻容器,自动重启,macOS 主机自动同步 Safari Cookie
 
 > **免责声明**:本项目与 Google 无关。底层依赖
