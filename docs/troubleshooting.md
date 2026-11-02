@@ -32,6 +32,8 @@ bash scripts/e2e-image.sh
 | `docker ps` shows `unhealthy` but `/health` returns ok | Old healthcheck used `curl`; the image now uses `urllib` | Pull the new image: `docker compose pull && docker compose up -d --force-recreate` |
 | Image-generation prompt rejected as "I cannot fulfill" but text-only chat is fine | Specific safety filter hit on the image pipeline | Re-phrase the prompt (no human faces, copyrighted characters, etc.) or use the Flash model which has looser filters |
 | Upstream `quota_message` (e.g. "you've reached your limit") | Free-tier quota exhausted for the day | Wait for the quota to reset (typically 24h) or switch to a different Google account |
+| HTTP 429 with the upstream quota text (previously 403 "Upstream refused request") | Image quota spent; the reply is a notice, not a policy refusal | Wait for the reset. The proxy now logs `Gemini returned no image (model=…, reference_images=…, account_status=…): <upstream text>` so quota, cookie expiry, and a genuine refusal can be told apart |
+| HTTP 401 right after an image request that used a reference image | Gemini session expired mid-flight (the SDK marks the account `UNAUTHENTICATED` on RPC code 7) | Re-sync cookies and restart; this is not a reference-image problem |
 
 ## Cookie cache
 

@@ -24,7 +24,7 @@
 
 </div>
 
-> **本 fork 的修改（2026-11-02）**：增加图像模型别名回退，以及同步聊天的 `thinking_level` 开关（`1` = 标准，`2` = 扩展）。详见 [FORK_NOTES.md](FORK_NOTES.md)。
+> **本 fork 的修改（2026-11-02）**：增加图像模型别名回退、两档聊天思考模式，并为聊天新增专用 `files` 文件输入字段，支持 data URL 和 HTTP(S) URL。详见 [FORK_NOTES.md](FORK_NOTES.md)。
 
 <p align="center">
   <img src="docs/assets/hero-lemon.png" alt="通过代理生成的水彩柠檬" width="512">
@@ -45,10 +45,12 @@ Gemini Web 的人用** —— 浏览器里登录就有免费每日额度,想把�
 - **一个服务,所有 OpenAI 客户端通用。** OpenAI Python SDK、LobeChat、
   NextChat、ChatBox 或者你自己的脚本,都指向
   `http://localhost:4982/openai` 就能用
-- **出图也能用。** 强制返回 base64 PNG/JPEG,下游客户端不用折腾
-  Google CDN 跳转链
-- **两档同步思考模式。** `thinking_level` 默认值为 `2`（扩展）；聊天请求
-  可显式设为 `1` 使用标准思考。
+- **出图也能用。** 同时返回 base64 PNG/JPEG 和代理直连下载 URL；下游
+  客户端不用折腾 Google CDN 跳转链
+- **支持聊天文件附件。** 使用专用 `files` 字段（或 `file` 别名）传入
+  data URL 或 HTTP(S) URL；PDF 会保留 `.pdf` 扩展名，便于 SDK 上传识别。
+- **两档聊天思考模式。** `thinking_level=2`（扩展，默认）或 `1`（标准），
+  映射到底层 SDK 已支持的布尔 `extended_thinking` 开关。
 - **Docker 一行起。** 长驻容器,自动重启,macOS 主机自动同步 Safari Cookie
 
 > **免责声明**:本项目与 Google 无关。底层依赖
@@ -194,8 +196,8 @@ img = client.images.generate(
 pathlib.Path("out.png").write_bytes(base64.b64decode(img.data[0].b64_json))
 ```
 
-代理**始终**返回 `b64_json`(永不下发 Google CDN URL),因为大多数下游
-客户端无法直连 `lh3.googleusercontent.com/...`。出图流水线与下载链
+代理同时返回 `b64_json` 和由代理提供的直接 GET 下载 URL（不会暴露 Google CDN URL），因为大多数下游
+客户端无法直连 `lh3.googleusercontent.com/...`。下载链接在内存中保留 1 小时；启用 API key 鉴权时，GET 请求也需要携带相同的 Bearer key。出图流水线与下载链
 见 [docs/api.md](docs/api.md#reference-images) 和
 [docs/downloaders.md](docs/downloaders.md)。
 

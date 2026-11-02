@@ -13,6 +13,20 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Literal
 
+ThinkingLevel = Literal[1, 2]
+
+
+def thinking_level_to_extended(level: ThinkingLevel | int) -> bool:
+    """Map the proxy's two thinking levels onto the SDK's boolean switch.
+
+    ``gemini-webapi`` only exposes ``extended_thinking: bool``; it has no
+    arbitrary multi-step intensity. Level ``2`` enables extended thinking and
+    is the default; level ``1`` keeps standard thinking.
+    """
+    if isinstance(level, bool) or level not in (1, 2):
+        raise ValueError("thinking_level must be 1 (standard) or 2 (extended)")
+    return level == 2
+
 
 @dataclass
 class ModelDescriptor:

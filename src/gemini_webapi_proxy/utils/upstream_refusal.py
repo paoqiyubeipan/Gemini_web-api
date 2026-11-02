@@ -92,6 +92,39 @@ def looks_like_upstream_refusal(text: str) -> bool:
     )
 
 
+# Quota / usage-limit notices.  These are *not* policy refusals: the model is
+# reporting that the plan's image quota is spent and when it resets.  They used
+# to fall through to "Upstream refused request" (HTTP 403), which made a
+# reference-image request look like a capability refusal while the real cause
+# was an exhausted quota.
+_QUOTA_PHRASES = (
+    "quota",
+    "limit resets",
+    "limit will reset",
+    "resets in about",
+    "reset in about",
+    "reached your limit",
+    "reached the limit",
+    "reached your plan",
+    "usage in settings",
+    "out of credits",
+    "credits remaining",
+    "额度",
+    "配额",
+    "上限",
+    "重置",
+    "使用情况",
+)
+
+
+def looks_like_quota_message(text: str) -> bool:
+    """True if Gemini answered with a quota / usage-limit notice."""
+    blob = (text or "").lower()
+    if not blob.strip():
+        return False
+    return any(p in blob for p in _QUOTA_PHRASES)
+
+
 # Actionable guidance appended to every 403 returned by the proxy.
 # Centralised here so we keep one copy of the troubleshooting text.
 COOKIE_REAUTH_HINT = (

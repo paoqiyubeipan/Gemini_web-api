@@ -24,7 +24,7 @@ Drop-in `base_url` replacement for any OpenAI client — **no API key, reuses yo
 
 </div>
 
-> **Fork-specific changes (2026-11-02):** this fork includes an image-model alias fallback and a synchronous chat `thinking_level` switch (`1` = standard, `2` = extended). See [FORK_NOTES.md](FORK_NOTES.md) for details.
+> **Fork-specific changes (2026-11-02):** this fork includes an image-model alias fallback, two chat thinking modes, and a dedicated `files` input for data/HTTP(S) references. See [FORK_NOTES.md](FORK_NOTES.md) for details.
 
 <p align="center">
   <img src="docs/assets/hero-lemon.png" alt="Lemon watercolor generated through the proxy" width="512">
@@ -44,10 +44,12 @@ client — without copy-pasting prompts into the web UI.
   cookies, env vars, or a cookies.txt).
 - **One server, every OpenAI client.** Point OpenAI Python SDK, LobeChat,
   NextChat, ChatBox, or your own scripts at `http://localhost:4982/openai`.
-- **Image gen, not just chat.** Returns base64 PNG/JPEG so downstream
-  clients don't have to wrestle with Google's CDN redirects.
-- **Two synchronous thinking levels.** `thinking_level` defaults to `2`
-  (extended); set it to `1` for standard thinking on chat requests.
+- **Image gen, not just chat.** Returns base64 PNG/JPEG plus a direct
+  proxy-hosted download URL, without exposing Google's CDN redirects.
+- **Chat file attachments.** Use the dedicated `files` field (or `file` alias)
+  for data URLs or HTTP(S) URLs; PDFs retain their `.pdf` extension for SDK upload.
+- **Two chat thinking modes.** `thinking_level=2` (extended, default) or `1`
+  (standard); these map to the SDK's supported boolean `extended_thinking` switch.
 - **Docker one-liner.** A long-running container with auto-restart and
   cookie refresh via the macOS host's Safari.
 
@@ -80,7 +82,7 @@ client — without copy-pasting prompts into the web UI.
 
 - 🪄 **Drop-in OpenAI API** — point any OpenAI client (Python SDK, OpenAI CLI, ChatBox, NextChat, LobeChat, Outsider Studio, …) at `http://localhost:4982/openai`
 - 💬 **Chat completions** — non-streaming JSON, multi-turn, reference images
-- 🖼 **Image generation** — base64 output only (no CDN URL leakage), text-to-image + reference-image-to-image
+- 🖼 **Image generation** — base64 plus a proxy-hosted GET download URL (no CDN URL leakage), text-to-image + reference-image-to-image
 - 🍪 **Pluggable cookie sources** — desktop browser (Safari/Chrome/…), env vars, Netscape cookie file
 - 🐳 **One-command Docker** — `docker compose up -d`, auto-restart, host network bridge for the local proxy
 - 🔌 **Multi-fallback image download** — Playwright Chromium → httpx → curl_cffi → library save
@@ -196,8 +198,11 @@ img = client.images.generate(
 pathlib.Path("out.png").write_bytes(base64.b64decode(img.data[0].b64_json))
 ```
 
-The proxy always returns `b64_json` (never Google CDN URLs) because most
-downstream clients can't fetch `lh3.googleusercontent.com/...` directly.
+The proxy returns both `b64_json` and a direct GET URL hosted by the proxy; it
+never exposes Google CDN URLs because most downstream clients can't fetch
+`lh3.googleusercontent.com/...` directly. Download links are retained in memory
+for one hour and require the configured Bearer key when API-key authentication
+is enabled.
 See [docs/api.md](docs/api.md#reference-images) and
 [docs/downloaders.md](docs/downloaders.md) for the download chain.
 

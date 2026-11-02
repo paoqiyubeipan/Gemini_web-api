@@ -29,6 +29,7 @@ async def chat_completions(body: ChatCompletionRequest):
             settings,
             model=body.model,
             messages=body.messages,
+            files=body.files,
             thinking_level=body.thinking_level,
         )
     except TimeoutError:

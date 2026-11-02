@@ -43,6 +43,20 @@ def test_cookie_expired_file_message() -> None:
 
 
 @pytest.mark.parametrize(
+    ("source", "needle"),
+    [
+        ("browser", "browser"),
+        ("file", "GOP_COOKIE_FILE"),
+        ("env", "GOP_GEMINI_1PSID"),
+    ],
+)
+def test_cookie_expired_for_source(source: str, needle: str) -> None:
+    err = CookieExpiredError.for_source(source)
+    assert err.http_status == 401
+    assert needle in str(err)
+
+
+@pytest.mark.parametrize(
     "text",
     [
         "I can try to find an image like that for you, but can't create it right now.",

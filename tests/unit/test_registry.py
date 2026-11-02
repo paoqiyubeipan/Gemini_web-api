@@ -43,7 +43,7 @@ def test_registry_resolve_alias() -> None:
     assert r.resolve_id("gemini-3-pro-preview") == "gemini-3-pro"
 
 
-def test_registry_pick_image_prefers_probed() -> None:
+def test_registry_pick_image_prefers_flash_by_default() -> None:
     r = ModelRegistry()
     r.sync_from_client(
         [
@@ -53,6 +53,30 @@ def test_registry_pick_image_prefers_probed() -> None:
     )
     r.update_probe("gemini-3-pro-image-preview", image_ok=True)
     r.update_probe("gemini-3-flash", chat_ok=True)
+    assert r.pick_image_model() == "gemini-2.5-flash-image"
+
+
+def test_registry_pick_image_preserves_explicit_pro_model() -> None:
+    r = ModelRegistry()
+    r.sync_from_client(
+        [
+            _mk("gemini-3-flash", "fast", "chat"),
+            _mk("gemini-3-pro", "Pro", "advanced"),
+        ]
+    )
+    r.update_probe("gemini-3-flash", chat_ok=True)
+
+    # Explicit model selection is not replaced by the Flash default, even if
+    # image capability for this backend has not yet been probed.
+    assert r.pick_image_model("gemini-3-pro") == "gemini-3-pro"
+    assert r.pick_image_model("gemini-2.5-pro-image") == "gemini-2.5-pro-image"
+
+
+def test_registry_pick_image_uses_live_pro_when_flash_is_unavailable() -> None:
+    r = ModelRegistry()
+    r.sync_from_client([_mk("gemini-3-pro-image-preview", "image", "image gen")])
+    r.update_probe("gemini-3-pro-image-preview", image_ok=True)
+
     assert r.pick_image_model() == "gemini-3-pro-image-preview"
 
 

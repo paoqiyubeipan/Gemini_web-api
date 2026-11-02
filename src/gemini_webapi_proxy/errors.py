@@ -40,6 +40,15 @@ class CookieExpiredError(ImageExportError):
     http_status = 401
 
     @classmethod
+    def for_source(cls, source: str) -> CookieExpiredError:
+        """Build the message that matches the configured cookie source."""
+        if source == "browser":
+            return cls.for_browser_mode()
+        if source == "file":
+            return cls.for_file_mode()
+        return cls.for_env_mode()
+
+    @classmethod
     def for_browser_mode(cls) -> CookieExpiredError:
         return cls(
             "Gemini cookies are missing or stale. Sign in to gemini.google.com in "

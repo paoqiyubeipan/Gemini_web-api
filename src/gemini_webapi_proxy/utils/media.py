@@ -49,6 +49,8 @@ def decode_data_url(data_url: str) -> tuple[str, bytes]:
 
 
 def _ext_from_mime(mime: str) -> str:
+    if "pdf" in mime:
+        return ".pdf"
     if "png" in mime:
         return ".png"
     if "jpeg" in mime or "jpg" in mime:

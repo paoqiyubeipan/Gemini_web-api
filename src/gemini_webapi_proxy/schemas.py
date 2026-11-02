@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from typing import Any, Literal
+from urllib.parse import urlparse
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 
 
 class ErrorResponse(BaseModel):
@@ -28,18 +29,39 @@ class ChatMessage(BaseModel):
 
 
 class ChatCompletionRequest(BaseModel):
-    model: str
+    model: str | None = None
     messages: list[ChatMessage]
     stream: bool = False
     temperature: float | None = None
     max_tokens: int | None = None
     thinking_level: Literal[1, 2] = 2
+    files: str | list[str] | None = Field(
+        default=None,
+        validation_alias=AliasChoices("files", "file"),
+        description="File data URL(s) or HTTP(S) URL(s) to attach to the chat request.",
+    )
 
     @field_validator("thinking_level", mode="before")
     @classmethod
     def reject_boolean_thinking_level(cls, value: Any) -> Any:
         if isinstance(value, bool):
             raise ValueError("thinking_level must be integer 1 or 2")
+        return value
+
+    @field_validator("files")
+    @classmethod
+    def validate_file_sources(cls, value: str | list[str] | None) -> str | list[str] | None:
+        if value is None:
+            return None
+        refs = [value] if isinstance(value, str) else value
+        for ref in refs:
+            candidate = ref.strip()
+            parsed = urlparse(candidate)
+            if candidate.lower().startswith("data:"):
+                continue
+            if parsed.scheme in {"http", "https"} and parsed.netloc:
+                continue
+            raise ValueError("files entries must be data URLs or HTTP(S) URLs")
         return value
 
 
@@ -61,7 +83,7 @@ class ChatCompletionResponse(BaseModel):
 
 
 class ImageGenerationRequest(BaseModel):
-    model: str
+    model: str | None = None
     prompt: str
     n: int = 1
     size: str | None = "1024x1024"

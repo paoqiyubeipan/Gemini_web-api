@@ -14,6 +14,7 @@ from gemini_webapi_proxy.schemas import ErrorResponse
 from gemini_webapi_proxy.utils.upstream_refusal import (
     COOKIE_REAUTH_HINT,
     looks_like_image_refusal,
+    looks_like_quota_message,
     looks_like_upstream_refusal,
 )
 
@@ -51,17 +52,17 @@ async def map_api_error(exc: Exception, settings: Settings) -> JSONResponse:
         )
     if isinstance(exc, AuthError):
         await invalidate_client()
-        if settings.cookie_source == "browser":
-            msg: CookieExpiredError = CookieExpiredError.for_browser_mode()
-        elif settings.cookie_source == "file":
-            msg = CookieExpiredError.for_file_mode()
-        else:
-            msg = CookieExpiredError.for_env_mode()
+        msg: CookieExpiredError = CookieExpiredError.for_source(settings.cookie_source)
         return error_json(str(msg), 401)
     if isinstance(exc, asyncio.TimeoutError):
         return error_json("Request timed out", 504)
     if isinstance(exc, RuntimeError):
         text = str(exc)
+        if looks_like_quota_message(text):
+            # Quota notices are a capacity limit, not a policy refusal: keep the
+            # upstream wording and answer 429 so clients can back off and retry
+            # after the reset instead of treating it as a blocked request.
+            return error_json(text, 429)
         if looks_like_image_refusal(text) or looks_like_upstream_refusal(text):
             return error_json(
                 _with_reauth_hint(f"Upstream refused request: {text}"),

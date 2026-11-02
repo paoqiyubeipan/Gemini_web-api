@@ -20,9 +20,11 @@ SDK, `openai-cli`, `ChatBox`, `NextChat`, `LobeChat`, and others.
 
 ## Response Conventions
 
-- **Images**: only `b64_json` is returned. Google CDN `url` is
-  intentionally not exposed, because downstream clients cannot
-  usually fetch `lh3.googleusercontent.com/...` links.
+- **Images**: both `b64_json` and a proxy-hosted direct GET `url` are
+  returned. Google CDN URLs are never exposed because downstream clients
+  cannot usually fetch `lh3.googleusercontent.com/...` links. Download URLs
+  expire after one hour and use the configured API key when authentication
+  is enabled.
 - **Chat**: `stream=false` only in this version. Streaming is on the
   roadmap — see [README.md §Roadmap](../README.md#roadmap).
 - **Reference images**: send as the request body's `image` field

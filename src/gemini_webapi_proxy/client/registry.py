@@ -262,8 +262,7 @@ class ModelRegistry:
             candidates = [
                 name
                 for name in self._runtime
-                if tier in name.lower()
-                and (tier == "pro" or "lite" not in name.lower())
+                if tier in name.lower() and (tier == "pro" or "lite" not in name.lower())
             ]
             if candidates:
                 candidates.sort(
@@ -301,29 +300,64 @@ class ModelRegistry:
 
     def pick_image_model(self, requested: str | None = None) -> str:
         if requested:
-            resolved = self.resolve_id(requested)
-            entry = self._entries.get(resolved)
-            if entry and (entry.image_ok or entry.kind in {"image", "both"}):
-                return resolved
+            # An explicit caller choice always wins, even when its image
+            # capability has not been probed or is supplied via overrides.
+            return self.resolve_id(requested)
+
+        # Prefer the stable Flash alias when it resolves to a live runtime
+        # model. This prevents an earlier Pro image probe from becoming the
+        # implicit default merely because it appears first in the registry.
+        flash_alias = "gemini-2.5-flash-image"
+        if flash_alias in self._entries:
+            runtime = self.resolve_runtime(flash_alias)
+            runtime_id = getattr(runtime, "model_name", runtime)
+            if runtime_id in self._runtime:
+                return flash_alias
+
+        # If Flash is unavailable, use another live image-capable model.
         for entry in self._entries.values():
-            if entry.image_ok:
+            if entry.id in self._IMAGE_ALIAS_IDS:
+                continue
+            if entry.image_ok and entry.id in self._runtime:
                 return entry.id
+
+        # The Pro alias is a useful fallback when its underlying model is
+        # live but the registry has no raw image-capable entry for it.
+        pro_alias = "gemini-2.5-pro-image"
+        if pro_alias in self._entries:
+            runtime = self.resolve_runtime(pro_alias)
+            runtime_id = getattr(runtime, "model_name", runtime)
+            if runtime_id in self._runtime:
+                return pro_alias
+
         for entry in self._entries.values():
-            if entry.kind in {"image", "both"} or "image" in entry.id.lower():
+            if entry.id not in self._IMAGE_ALIAS_IDS and (
+                entry.kind in {"image", "both"} or "image" in entry.id.lower()
+            ):
                 return entry.id
         for entry in self._entries.values():
             if entry.chat_ok and "flash" in entry.id.lower():
                 return entry.id
+        if flash_alias in self._entries:
+            return flash_alias
         if self._entries:
             return next(iter(self._entries.keys()))
         return "gemini-3-flash"
 
     def pick_chat_model(self, requested: str | None = None) -> str:
         if requested:
-            resolved = self.resolve_id(requested)
-            entry = self._entries.get(resolved)
-            if entry and entry.kind != "image":
-                return resolved
+            return self.resolve_id(requested)
+        for entry in self._entries.values():
+            if (
+                entry.chat_ok
+                and entry.kind != "image"
+                and "flash" in entry.id.lower()
+                and "lite" not in entry.id.lower()
+            ):
+                return entry.id
+        for entry in self._entries.values():
+            if entry.chat_ok and entry.kind != "image" and "flash" in entry.id.lower():
+                return entry.id
         for entry in self._entries.values():
             if entry.chat_ok and entry.kind != "image":
                 return entry.id

@@ -10,6 +10,7 @@ import pytest
 from gemini_webapi_proxy.utils.media import (
     cleanup_reference_images,
     decode_data_url,
+    materialize_reference_images,
     normalize_image_field,
 )
 
@@ -48,6 +49,16 @@ def test_decode_data_url_invalid() -> None:
 def test_decode_data_url_empty() -> None:
     with pytest.raises(ValueError, match="empty"):
         decode_data_url("data:image/png;base64,")
+
+
+async def test_materialize_pdf_data_url_keeps_pdf_extension() -> None:
+    payload = base64.b64encode(b"%PDF-1.4\n").decode()
+    paths = await materialize_reference_images([f"data:application/pdf;base64,{payload}"])
+    try:
+        assert len(paths) == 1
+        assert paths[0].suffix == ".pdf"
+    finally:
+        cleanup_reference_images(paths)
 
 
 def test_cleanup_reference_images(tmp_path: Path) -> None:

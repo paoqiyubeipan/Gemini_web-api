@@ -12,6 +12,7 @@ from gemini_webapi_proxy.client.base import (
     BaseGeminiClient,
     GenerationResult,
     ModelDescriptor,
+    thinking_level_to_extended,
 )
 from gemini_webapi_proxy.errors import UpstreamRefusalError
 from gemini_webapi_proxy.utils.upstream_refusal import looks_like_upstream_refusal
@@ -100,13 +101,11 @@ class WebAPIClient(BaseGeminiClient):
         model: Any,
         thinking_level: Literal[1, 2] = 2,
     ) -> GenerationResult:
-        if isinstance(thinking_level, bool) or thinking_level not in (1, 2):
-            raise ValueError("thinking_level must be 1 (standard) or 2 (extended)")
         output = await self._client.generate_content(
             prompt,
             files=files or None,
             model=model,
-            extended_thinking=thinking_level == 2,
+            extended_thinking=thinking_level_to_extended(thinking_level),
         )
         text = (getattr(output, "text", "") or "").strip()
         images = list(getattr(output, "images", None) or [])
